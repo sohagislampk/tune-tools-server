@@ -22,6 +22,13 @@ async function run() {
 
         const usersCollenction = client.db('tunetools').collection('users');
 
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const result = await usersCollenction.find(query).toArray();
+            res.send(result);
+        })
+
+
         app.post('/users', async (req, res) => {
             const user = req.body
             const result = await usersCollenction.insertOne(user);
