@@ -23,10 +23,14 @@ async function run() {
         const usersCollenction = client.db('tunetools').collection('users');
 
         app.get('/users', async (req, res) => {
-            const query = {};
+            let query = {};
+            const rolequery = req.query.role;
+            if (rolequery) {
+                query = { role: rolequery }
+            }
             const result = await usersCollenction.find(query).toArray();
             res.send(result);
-        })
+        });
 
 
         app.post('/users', async (req, res) => {
@@ -34,6 +38,7 @@ async function run() {
             const result = await usersCollenction.insertOne(user);
             res.send(result)
         });
+
 
 
     }
