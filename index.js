@@ -44,7 +44,7 @@ async function run() {
 
         app.get('/products', async (req, res) => {
             let query = {};
-            const result = await usersCollenction.find(query).toArray();
+            const result = await productsCollenction.find(query).toArray();
             res.send(result);
         });
 
@@ -54,7 +54,12 @@ async function run() {
             const result = await productsCollenction.insertOne(product);
             res.send(result)
         });
-
+        app.get('/category/:name', async (req, res) => {
+            const name = req.params.name;
+            const query = { category: name }
+            const result = await productsCollenction.find(query).toArray()
+            res.send(result)
+        })
 
 
     }
