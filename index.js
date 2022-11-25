@@ -21,7 +21,8 @@ async function run() {
     try {
 
         const usersCollenction = client.db('tunetools').collection('users');
-
+        const productsCollenction = client.db('tunetools').collection('products');
+        // User add and get
         app.get('/users', async (req, res) => {
             let query = {};
             const rolequery = req.query.role;
@@ -36,6 +37,13 @@ async function run() {
         app.post('/users', async (req, res) => {
             const user = req.body
             const result = await usersCollenction.insertOne(user);
+            res.send(result)
+        });
+
+        // add and get products 
+        app.post('/products', async (req, res) => {
+            const product = req.body
+            const result = await productsCollenction.insertOne(product);
             res.send(result)
         });
 
