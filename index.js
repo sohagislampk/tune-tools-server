@@ -40,7 +40,15 @@ async function run() {
             res.send(result)
         });
 
-        // add and get products 
+        // add and get products
+
+        app.get('/products', async (req, res) => {
+            let query = {};
+            const result = await usersCollenction.find(query).toArray();
+            res.send(result);
+        });
+
+
         app.post('/products', async (req, res) => {
             const product = req.body
             const result = await productsCollenction.insertOne(product);
