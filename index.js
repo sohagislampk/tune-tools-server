@@ -22,6 +22,7 @@ async function run() {
 
         const usersCollenction = client.db('tunetools').collection('users');
         const productsCollenction = client.db('tunetools').collection('products');
+        const bookingsCollenction = client.db('tunetools').collection('bookings');
         // User add and get
         app.get('/users', async (req, res) => {
             let query = {};
@@ -43,7 +44,11 @@ async function run() {
         // add and get products
 
         app.get('/products', async (req, res) => {
-            const query = {};
+            let query = {};
+            const statusAdvertise = req.query.status;
+            if (statusAdvertise) {
+                query = { status: statusAdvertise }
+            }
             const result = await productsCollenction.find(query).toArray();
             res.send(result);
         });
@@ -51,6 +56,19 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await productsCollenction.findOne(query);
+            res.send(result);
+        });
+        app.put('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(req.body.status);
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    status: req.body.status
+                }
+            }
+            const result = await productsCollenction.updateOne(query, updateDoc, options);
             res.send(result);
         });
 
@@ -66,7 +84,12 @@ async function run() {
             const result = await productsCollenction.find(query).toArray()
             res.send(result)
         })
-
+        // Bookings
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body
+            const result = await bookingsCollenction.insertOne(booking);
+            res.send(result)
+        });
 
     }
     finally {
