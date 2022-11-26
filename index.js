@@ -85,11 +85,25 @@ async function run() {
             res.send(result)
         })
         // Bookings
+        app.get('/bookings', async (req, res) => {
+            const query = {}
+            const result = await bookingsCollenction.find(query).toArray();
+            res.send(result)
+        });
         app.post('/bookings', async (req, res) => {
             const booking = req.body
             const result = await bookingsCollenction.insertOne(booking);
             res.send(result)
         });
+        app.delete('/bookings/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await bookingsCollenction.deleteOne(query);
+            res.send(result)
+        })
 
     }
     finally {
