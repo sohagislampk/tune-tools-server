@@ -3,7 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
-
+const jwt = require('jsonwebtoken')
 
 const app = express();
 
@@ -23,6 +23,20 @@ async function run() {
         const usersCollenction = client.db('tunetools').collection('users');
         const productsCollenction = client.db('tunetools').collection('products');
         const bookingsCollenction = client.db('tunetools').collection('bookings');
+        // JWT
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = {
+                email: email
+            }
+            const user = await usersCollenction.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+                return res.send({ accessToken: token })
+            }
+            res.status(403).send({ accessToken: '' })
+        });
+
         // User add and get
         app.get('/users', async (req, res) => {
             let query = {};
@@ -48,6 +62,32 @@ async function run() {
             }
             const result = await usersCollenction.deleteOne(query);
             res.send(result)
+        });
+        app.put('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    status: "verified"
+                }
+            }
+            const result = await usersCollenction.updateOne(query, updateDoc, options);
+            res.send(result);
+        });
+        // Admin
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await usersCollenction.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' })
+        })
+        // seller
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await usersCollenction.findOne(query);
+            res.send({ isSeller: user?.role === 'seller' })
         })
 
         // add and get products
