@@ -47,6 +47,14 @@ async function run() {
             const result = await usersCollenction.find(query).toArray();
             res.send(result);
         });
+        app.get('/users/:email', async (req, res) => {
+            const userEmail = req.params.email;
+            const query = {
+                email: userEmail
+            }
+            const result = await usersCollenction.findOne(query);
+            res.send(result);
+        });
 
 
         app.post('/users', async (req, res) => {
@@ -95,8 +103,12 @@ async function run() {
         app.get('/products', async (req, res) => {
             let query = {};
             const statusAdvertise = req.query.status;
+            const userEmail = req.query.email
             if (statusAdvertise) {
                 query = { status: statusAdvertise }
+            }
+            if (userEmail) {
+                query = { email: userEmail }
             }
             const result = await productsCollenction.find(query).toArray();
             res.send(result);
@@ -129,13 +141,20 @@ async function run() {
         });
         app.get('/category/:name', async (req, res) => {
             const name = req.params.name;
-            const query = { category: name }
+            const query = {
+                category: name,
+                status: { $ne: "sold" }
+            }
             const result = await productsCollenction.find(query).toArray()
             res.send(result)
         })
         // Bookings
         app.get('/bookings', async (req, res) => {
-            const query = {}
+            let query = {}
+            const userEmail = req.query.email;
+            if (userEmail) {
+                query = { buyerEmail: userEmail }
+            }
             const result = await bookingsCollenction.find(query).toArray();
             res.send(result)
         });
