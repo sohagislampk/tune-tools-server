@@ -108,7 +108,7 @@ async function run() {
                 query = { status: statusAdvertise }
             }
             if (userEmail) {
-                query = { email: userEmail }
+                query = { sellerEmail: userEmail }
             }
             const result = await productsCollenction.find(query).toArray();
             res.send(result);
@@ -133,6 +133,14 @@ async function run() {
             res.send(result);
         });
 
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await productsCollenction.deleteOne(query);
+            res.send(result)
+        });
 
         app.post('/products', async (req, res) => {
             const product = req.body
