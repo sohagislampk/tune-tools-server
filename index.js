@@ -16,7 +16,7 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.9qpmxm2.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-
+// Verify JWT
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -40,6 +40,7 @@ async function run() {
         const productsCollenction = client.db('tunetools').collection('products');
         const bookingsCollenction = client.db('tunetools').collection('bookings');
         const paymentsCollenction = client.db('tunetools').collection('payments');
+        const wishlistsCollenction = client.db('tunetools').collection('wishlists');
 
         // Verify Admin
         const verifyAdmin = async (req, res, next) => {
@@ -92,6 +93,15 @@ async function run() {
 
         app.post('/users', async (req, res) => {
             const user = req.body
+            const query = {
+                email: user.email,
+                role: user.role
+            }
+            console.log(user.email);
+            const filter = await usersCollenction.findOne(query);
+            if (filter) {
+                return res.send({ message: "Email Already in user" })
+            }
             const result = await usersCollenction.insertOne(user);
             res.send(result)
         });
@@ -155,16 +165,48 @@ async function run() {
         });
         app.put('/products/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
-            console.log(req.body.status);
             const query = { _id: ObjectId(id) };
+            const status = req.body.status;
+            const wishlist = req.body.wishlist;
+            console.log(wishlist);
+            const wishQuery = {
+                productId: { $ne: id }
+            }
             const options = { upsert: true };
+            const insertWishlist = {
+                productId: id,
+                wishlist: wishlist,
+                name: req.body.name,
+                email: req.body.email,
+                buyerName: req.body.buyerName,
+                image: req.body.image,
+                price: req.body.price
+            }
             const updateDoc = {
                 $set: {
-                    status: req.body.status
+                    status: status
                 }
             }
-            const result = await productsCollenction.updateOne(query, updateDoc, options);
-            res.send(result);
+            const wishlistUpdate = {
+                $set: {
+                    wishlist: wishlist
+                }
+            }
+            if (status) {
+
+                const result = await productsCollenction.updateOne(query, updateDoc, options);
+                return res.send(result);
+            }
+            if (wishQuery) {
+
+                const wishlist = await wishlistsCollenction.insertOne(insertWishlist);
+                return res.send(wishlist)
+            }
+            if (wishlist) {
+                const result = await productsCollenction.updateOne(query, wishlistUpdate, options);
+                return res.send(result);
+            }
+
         });
 
         app.delete('/products/:id', verifyJWT, async (req, res) => {
@@ -189,7 +231,10 @@ async function run() {
             }
             const result = await productsCollenction.find(query).toArray()
             res.send(result)
-        })
+        });
+
+
+
         // Bookings
         app.get('/bookings', verifyJWT, async (req, res) => {
 
@@ -203,7 +248,9 @@ async function run() {
             if (userEmail) {
                 const query = {
                     buyerEmail: userEmail,
+
                 }
+
                 const result = await bookingsCollenction.find(query).toArray();
                 res.send(result)
             } else
@@ -221,6 +268,16 @@ async function run() {
         });
         app.post('/bookings', verifyJWT, async (req, res) => {
             const booking = req.body
+            const product = booking.productId
+            const query = {
+                productId: product,
+                buyerEmail: booking.buyerEmail
+            }
+            const filter = await bookingsCollenction.findOne(query);
+            if (filter) {
+                return res.send({ message: "Product is already Booked" })
+            }
+
             const result = await bookingsCollenction.insertOne(booking);
             res.send(result)
         });
