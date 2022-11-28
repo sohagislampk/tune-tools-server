@@ -118,10 +118,23 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const options = { upsert: true };
+            const email = req.body.email;
+            const queryproduct = {
+                sellerEmail: email
+            }
             const updateDoc = {
                 $set: {
                     status: "verified"
                 }
+            }
+            const productDoc = {
+                $set: {
+                    userRole: "verified"
+                }
+            }
+            if (queryproduct) {
+                const updateProduct = await productsCollenction.updateMany(queryproduct, productDoc, options);
+                console.log(updateProduct);
             }
             const result = await usersCollenction.updateOne(query, updateDoc, options);
             res.send(result);
