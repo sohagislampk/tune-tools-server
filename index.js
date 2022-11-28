@@ -97,7 +97,7 @@ async function run() {
                 email: user.email,
                 role: user.role
             }
-            console.log(user.email);
+
             const filter = await usersCollenction.findOne(query);
             if (filter) {
                 return res.send({ message: "Email Already in user" })
@@ -168,10 +168,7 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const status = req.body.status;
             const wishlist = req.body.wishlist;
-            console.log(wishlist);
-            const wishQuery = {
-                productId: { $ne: id }
-            }
+
             const options = { upsert: true };
             const insertWishlist = {
                 productId: id,
@@ -197,12 +194,9 @@ async function run() {
                 const result = await productsCollenction.updateOne(query, updateDoc, options);
                 return res.send(result);
             }
-            if (wishQuery) {
 
-                const wishlist = await wishlistsCollenction.insertOne(insertWishlist);
-                return res.send(wishlist)
-            }
             if (wishlist) {
+                const wishlist = await wishlistsCollenction.insertOne(insertWishlist);
                 const result = await productsCollenction.updateOne(query, wishlistUpdate, options);
                 return res.send(result);
             }
@@ -232,7 +226,23 @@ async function run() {
             const result = await productsCollenction.find(query).toArray()
             res.send(result)
         });
-
+        // wishlist 
+        app.get('/wishlist', async (req, res) => {
+            const email = req.query.email;
+            const query = {
+                email: email
+            }
+            const result = await wishlistsCollenction.find(query).toArray();
+            res.send(result)
+        });
+        app.delete('/wishlist/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await wishlistsCollenction.deleteOne(query);
+            res.send(result)
+        })
 
 
         // Bookings
@@ -301,7 +311,7 @@ async function run() {
                     "card"
                 ]
             });
-            console.log(paymentIntent.client_secret);
+
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
