@@ -215,7 +215,7 @@ async function run() {
             }
 
         });
-
+        //  Delete Product 
         app.delete('/products/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = {
@@ -239,7 +239,7 @@ async function run() {
             const result = await productsCollenction.find(query).toArray()
             res.send(result)
         });
-        // wishlist 
+        // wishlist add 
         app.get('/wishlist', async (req, res) => {
             const email = req.query.email;
             const query = {
