@@ -312,7 +312,7 @@ async function run() {
             const result = await bookingsCollenction.deleteOne(query);
             res.send(result)
         })
-        // Payment
+        // Payment Set
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
             const price = booking.price;
